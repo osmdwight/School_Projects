@@ -1,0 +1,69 @@
+---
+title: "CYTOF Data Analysis_FA 2"
+author: "Dwight Gonzales"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=TRUE, warning=FALSE, message = FALSE}
+
+library(readr)
+library(tidyverse)
+
+df <- read_csv("C:\\Users\\DWIGHT JIRO\\Downloads\\cytof_one_experiment.csv", show_col_types = FALSE)
+
+df_long <- df %>%
+  pivot_longer(cols = everything(), names_to = "Protein", values_to = "Amount")
+
+df_long 
+
+  mean_mad <- df_long %>%  
+  group_by(Protein) %>%
+  summarise(
+    median_level = median(Amount, na.rm = TRUE),
+    mad_level = mad(Amount, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  arrange(mad_level, median_level)
+
+mean_mad %>% print(n = 35)
+
+spread_location_plot <- ggplot(mean_mad, aes(x = mad_level, y = median_level)) +
+  geom_jitter(color = "blue", size = 2, height = 0) +  
+  geom_smooth(se = TRUE, color = "red", linetype = "dashed", size = 1) +  # LOESS trend line
+  stat_summary(fun = median, geom = "line", color = "darkred", size = 1) +  # Median trend line
+  geom_text(aes(label = Protein), vjust = -1, color = "black", size = 3.5) +  # Labels above points
+  labs(
+    title = "Spread-Location (S-L) Plot",
+    subtitle = "MAD vs. Median Protein Level",
+    x = "Median Absolute Deviation (MAD)",
+    y = "Median Protein Level"
+  ) +
+  theme_minimal()
+
+spread_location_plot
+
+```
+
+## Interpretation of Results
+
+- Positive Relationship at First
+
+Initially, as MAD increases, the median protein level tends to rise.
+This suggests that proteins with higher variability (MAD) often have higher median levels.
+
+- Fluctuations and Outliers
+
+There are sharp spikes and drops, particularly around certain proteins (e.g., Perforin has a very high median but moderate MAD).
+Some proteins with very small MADs also have widely varying median levels, meaning their variability is low, but their central tendency differs.
+
+- Flattening or Decline at Higher MAD
+
+At higher MAD values, the median levels seem to stabilize or decline slightly.
+This could indicate that proteins with high spread (MAD) do not necessarily have high median levels.
+
+- Loess Trend Line (Red, Dashed)
+
+The loess (smoothed) trend suggests a non-linear relationship:
+Rising initially (higher MAD, higher median)
+Flattening or slightly declining later (higher MAD, more variable but lower median)
