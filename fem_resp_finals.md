@@ -137,7 +137,7 @@ fem_resp$RHADSEX <- factor(fem_resp$RHADSEX, levels = c(1, 5), labels = c("Yes",
 
 ![](fem_resp_finals_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
-``` r
+``` {r,warning = FALSE, message = FALSE}
   # Age at 1st Sex-Last in Last 12 mos 
   
   library(dplyr)
